@@ -1,4 +1,4 @@
-var canvas, ctx, SIZE, frames = 0,
+let canvas, ctx, SIZE, frames = 0,speed = 6,
 
 floor = {
     y: 0,
@@ -20,7 +20,7 @@ player = {
     
     gravity: 1.5,
     speed: 0,
-    jumpForce: 15,
+    jumpForce: 20,
     maxJumps: 2,
     countJumps:0,
 
@@ -42,6 +42,47 @@ player = {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x,this.y,this.width,this.height);
     }
+},
+
+obstacles = {
+    _obs:[],
+    colors:["#ffbc1c","#ff1c1c","#ff85e1","#52a7ff","#78ff5d"],
+    insertTime: 0,
+
+    insert: function(){
+        this._obs.push({
+            x:canvas.width,
+            width: 30 + Math.floor(20 * Math.random()),
+            height: 30 + Math.floor(120 * Math.random()),
+            color: this.colors[Math.floor(this.colors.length * Math.random())]
+        });
+        this.insertTime = 30;
+    },
+    update: function(){
+        if (this.insertTime === 0){
+            this.insert();
+        }else{
+            this.insertTime --;
+        }
+        for(let i = 0, size = this._obs.length; i < size; i++){
+            let obs = this._obs[i];
+
+            obs.x -= speed;
+
+            if (obs.x <= -obs.width){
+                this._obs.splice(i,1);
+                size --;
+                i --;
+            }
+        }
+    },
+    draw: function(){
+        for(let i = 0, size = this._obs.length; i < size; i++){
+            let obs = this._obs[i];
+            ctx.fillStyle = obs.color;
+            ctx.fillRect(obs.x,floor.y - obs.height,obs.width,obs.height);
+        }
+    }
 };
 
 function click(){
@@ -49,7 +90,7 @@ function click(){
 }
 
 function scaleSize(porcent){
-    return parseInt((SIZE*porcent)/100);
+    return parseInt((SIZE * porcent) / 100);
 }
 
 function calcVars(){
@@ -88,6 +129,7 @@ function run(){
 
 function update(){
     frames++;
+    obstacles.update();
     player.update();
 
 }
@@ -96,6 +138,7 @@ function draw(){
     ctx.fillStyle = "#50BEFF";
     ctx.fillRect(0,0,SIZE,SIZE);
     floor.draw();
+    obstacles.draw();
     player.draw();
 }
 
